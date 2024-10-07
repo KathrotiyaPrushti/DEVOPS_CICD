@@ -1,51 +1,39 @@
-name: CI/CD Pipeline for MERN Application (Windows Server)
+name: Build and Test MERN Application
 
 on:
   push:
     branches:
-      - main  # Trigger on push to the main branch
+      - main  # Trigger workflow on push to the main branch
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # This workflow will run on Ubuntu (GitHub-hosted runner)
+    runs-on: ubuntu-latest  # The runner will run on Ubuntu (Linux)
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3  # Check out the code from the repository
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '16'  # Specify the Node.js version
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'  # Specify Node.js version
 
-    - name: Install backend dependencies
-      run: |
-        cd backend
-        npm install
-
-    - name: Install frontend dependencies
-      run: |
-        cd frontend
-        npm install
-
-    - name: Build frontend
-      run: |
-        cd frontend
-        npm run build
-
-    - name: Deploy to Windows Server via SSH
-      uses: appleboy/ssh-action@v0.1.6
-      with:
-        host: ${{ secrets.WINDOWS_SERVER_IP }}  # Add Windows server IP in GitHub Secrets
-        username: ${{ secrets.WINDOWS_SERVER_USER }}  # Add Windows username in GitHub Secrets
-        key: ${{ secrets.SSH_PRIVATE_KEY }}  # Add the SSH private key in GitHub Secrets
-        port: 22  # Default SSH port (or use a different port if needed)
-        script: |
-          cd C:\Users\Administrator\Downloads\DEVOPS_EXAM-main  # Path where the app is cloned on your Windows machine
-          git pull origin main
+      - name: Install backend dependencies
+        run: |
           cd backend
-          npm install
-          cd ../frontend
-          npm install
-          npm run build
-          pm2 restart all  # Restart the app using PM2
+          npm install  # Install backend dependencies
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm install  # Install frontend dependencies
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build  # Build frontend
+
+      - name: Run backend tests
+        run: |
+          cd backend
+          npm test  # Run tests in the backend
